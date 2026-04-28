@@ -1,0 +1,148 @@
+CREATE DATABASE IF NOT EXISTS
+mood_tracker;
+USE mood_tracker;
+#AUTO_INCREMENT  чтобы id создавался сам
+CREATE TABLE Users (
+  user_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATE
+);
+INSERT INTO Users (user_id, username, email, password_hash,  created_at) VALUES
+(1, 'MackLovin', 'MackLovin@email.com', 'hash123', '2026-10-01'),
+(2, 'Jungkook', 'Jungkook@email.com', 'hash1234', '2025-11-03');
+
+CREATE TABLE Mood_Logs (
+  log_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  user_id INTEGER,
+  score INTEGER NOT NULL,
+  note VARCHAR(1000),
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+); # ON DELETE CASCADE удвление пользователя удалит все его логи, записи и тд.
+
+INSERT INTO Mood_Logs (log_id, user_id, score, note) VALUES
+(1, 1, 1, 'Отличный день'),
+(2, 1, 5, 'Немного устал'),
+(3, 2, 4, 'Хорошее настроение'),
+(4, 2, 3, 'Плохой день'),
+(5, 1, 2, 'Очень продуктивный день');
+
+
+CREATE TABLE Tags (
+  tag_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  tag_name VARCHAR(50) UNIQUE,
+  emoji VARCHAR(10),
+  tag_type VARCHAR(50)
+);
+
+INSERT INTO Tags (tag_id, tag_name, emoji, tag_type) VALUES
+(1, 'happy', '😊', 'positive' ),
+(2, 'Sad', '😢', 'negative'),
+(3, 'Angry', '😡', 'negative'),
+(4, 'Calm', '😌', 'neutral'),
+(5, 'Anxious', '😰', 'negative');
+
+CREATE TABLE Log_Tags(
+  log_id INTEGER,
+  tag_id INTEGER,
+  PRIMARY KEY (log_id, tag_id),
+  FOREIGN KEY (log_id) REFERENCES Mood_Logs(log_id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES Tags(tag_id) ON DELETE CASCADE
+);
+
+INSERT INTO Log_Tags (log_id, tag_id) VALUES
+(1, 1),
+(2, 5),
+(3, 4),
+(4, 2),
+(5, 1);
+
+CREATE TABLE Teams(
+  team_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  team_name VARCHAR(50) NOT NULL,
+  team_description VARCHAR(100),
+  created_by INTEGER,
+  FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE SET NULL
+);
+
+INSERT INTO Teams (team_id, team_name, team_description, created_by) VALUES
+(1, 'Support Team', 'Команда поддержки', 1),
+(2, 'Wellness Group', 'Группа благополучия', 2),
+(3, 'MindCare', 'Забота о ментальном здоровье', 1),
+(4, 'Daily Motivation', 'Мотивация каждый день', 2),
+(5, 'Calm Minds', 'Спокойствие и баланс', 1);
+
+CREATE TABLE Team_Members(
+  team_id INTEGER,
+  user_id INTEGER,
+  role VARCHAR(50) DEFAULT 'member',
+  PRIMARY KEY (team_id, user_id),
+  FOREIGN KEY (team_id) REFERENCES Teams(team_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+INSERT INTO Team_Members (team_id, user_id, role) VALUES
+(1, 1, 'admin'),
+(1, 2, 'member'),
+(2, 2, 'member'),
+(3, 1, 'admin'),
+(4, 2, 'member');
+
+CREATE TABLE Resources (
+  res_id INTEGER PRIMARY KEY,
+  title VARCHAR(100),
+  url VARCHAR(255),
+  res_description VARCHAR(100),
+  category VARCHAR(50)
+);
+
+INSERT INTO Resources(res_id, title, url, res_description, category)VALUES
+(1, 'Техники  самопомощи', 'https://www.b17.ru/blog/461922/', 'Методы самопомощи при стрессе', 'Самопомощь'),
+(2, 'Техники  самопомощи', 'https://psyprosvet.ru/life/tehniki-samopomoshhi/', 'Практики для улучшения состояния','Самопомощь'),
+(3, 'Как правильно медитировать', 'https://skillbox.ru/media/health/meditation-technique/', 'Руководство по медитации', 'медитация'),
+(4, 'Консультация психолога', 'https://psy-health.kg/index.php?option=com_content&view=article&id=131:konsultatsiya-psikhologa&catid=2:uncategorised', 'Оффлайн помощь специалиста''психолог'),
+(5, 'Консультация психолога онлайн', 'https://alter.ru/?utm_source=google&utm_medium=cpc&utm_campaign=g-search-foreign-expat-19736431665&utm_content=cid:19736431665|gid:189185548535|aid:784521860364|ph:kwd-296947264225|pt:|pn:|src:|st:g&utm_term=%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BF%D1%81%D0%B8%D1%85%D0%BE%D0%BB%D0%BE%D0%B3%D0%B0&code=Y29kZT0lRDAlQTElRDAlQTIlRDAlOTAlRDAlQTAlRDAlQTIyNiZpc19yZWZlcnJhbD0wJnBlcmNlbnQ9MjIuMDAwMCZjb3VudD0z&gad_source=1&gad_campaignid=19736431665&gbraid=0AAAAApL_dtjIAIkbEnj3RDnuNzBnsg2aX&gclid=Cj0KCQjwkrzPBhCqARIsAJN460mloSWMs8oIp96885Czmzn8oeNuGu8WksvJk1XUZ9kICAyxVAdYRcIaAqTPEALw_wcB','Онлайн консультации с психологом','психолог');
+
+
+CREATE TABLE User_Goals(
+  goal_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  user_id INTEGER,
+  goal_text VARCHAR(500),
+  current_value INTEGER DEFAULT 0,
+  is_completed BOOLEAN DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+#для тестировки
+INSERT INTO User_Goals (goal_id, user_id, goal_text, current_value, is_completed) VALUES
+(1, 1, 'Улучшить настроение до 8', 6, 0),
+(2, 1, 'Медитировать каждый день', 3, 0),
+(3, 2, 'Спать 8 часов', 8, 1),
+(4, 2, 'Снизить уровень стресса', 5, 0),
+(5, 1, 'Записывать эмоции ежедневно', 7, 0);
+
+CREATE TABLE Reminders(
+  rem_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  user_id INTEGER,
+  reminder_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  days_of_week VARCHAR(50),
+  is_active BOOLEAN DEFAULT 1,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+#для тестировки
+INSERT INTO Reminders (rem_id, user_id, reminder_time, days_of_week, is_active) VALUES
+(1, 1, '2026-04-30 09:00:00', 'Mon,Wed,Fri', 1),
+(2, 2, '2026-04-30 20:00:00', 'Tue,Thu', 1),
+(3, 1, '2026-05-01 08:00:00', 'Daily', 1),
+(4, 2, '2026-05-01 21:00:00', 'Sat,Sun', 0),
+(5, 1, '2026-05-02 10:00:00', 'Mon', 1);
+
+#backhand
+CREATE TABLE Audit_Logs (
+  aud_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+  action_type VARCHAR(50),
+  actor_id INTEGER,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (actor_id) REFERENCES Users(user_id)
+);
