@@ -1,7 +1,7 @@
---  Настройка кодировки 
+-- Настройка кодировки 
 SET NAMES utf8mb4;
 
---  Создание базы (если её еще нет)
+-- Создание базы (если её еще нет)
 CREATE DATABASE IF NOT EXISTS mood_tracker
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
@@ -9,7 +9,6 @@ COLLATE utf8mb4_unicode_ci;
 USE mood_tracker;
 
 -- Таблицы создаются только если их нет (IF NOT EXISTS)
--- Данные внутри таблиц при этом НЕ УДАЛЯЮТСЯ
 
 CREATE TABLE IF NOT EXISTS Users (
   user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -24,6 +23,7 @@ CREATE TABLE IF NOT EXISTS Mood_Logs (
   user_id INT,
   score INT NOT NULL,
   note VARCHAR(1000),
+  image_path VARCHAR(255), -- ЭТА СТРОКА ДОБАВЛЕНА ДЛЯ ПОДДЕРЖКИ ФОТО
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8mb4;
