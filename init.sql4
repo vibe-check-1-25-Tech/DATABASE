@@ -1,0 +1,145 @@
+
+--  Настройка кодировки 
+SET NAMES utf8mb4;
+
+--  Создание базы (если её еще нет)
+CREATE DATABASE IF NOT EXISTS mood_tracker
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE mood_tracker;
+
+-- Таблицы создаются только если их нет (IF NOT EXISTS)
+-- Данные внутри таблиц при этом НЕ УДАЛЯЮТСЯ
+
+CREATE TABLE IF NOT EXISTS Users (
+  user_id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS Mood_Logs (
+  log_id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT,
+  score INT NOT NULL,
+  note VARCHAR(1000),
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS Images (
+  image_id INT PRIMARY KEY AUTO_INCREMENT,
+  file_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(50),
+  image_data LONGBLOB NOT NULL,
+  uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+INSERT INTO Images (file_name, mime_type, image_data)
+VALUES (
+  'cat.jpg',
+  'image/jpeg',
+  LOAD_FILE('/path/cat.jpg')
+),
+('mem.jpg', 'image/jpeg', LOAD_FILE('/path/mem.jpg')),
+('mem1.jpg', 'image/jpeg', LOAD_FILE('/path/mem1.jpg')),
+('mem2.jpg', 'image/jpeg', LOAD_FILE('/path/mem2.jpg')),
+('mem3.jpg', 'image/jpeg', LOAD_FILE('/path/mem3.jpg')),
+('mem4.jpg', 'image/jpeg', LOAD_FILE('/path/mem4.jpg')),
+('mem5.jpg', 'image/jpeg', LOAD_FILE('/path/mem5.jpg')),
+('mem6.jpg', 'image/jpeg', LOAD_FILE('/path/mem6.jpg')),
+('mem7.jpg', 'image/jpeg', LOAD_FILE('/path/mem7.jpg')),
+('mem8.jpg', 'image/jpeg', LOAD_FILE('/path/mem8.jpg')),
+('mem9.jpg', 'image/jpeg', LOAD_FILE('/path/mem9.jpg')),
+('mem10.jpg', 'image/jpeg', LOAD_FILE('/path/mem10.jpg')),
+('mem11.jpg', 'image/jpeg', LOAD_FILE('/path/mem11.jpg')),
+('mem12.jpg', 'image/jpeg', LOAD_FILE('/path/mem12.jpg')),
+('mem13.jpg', 'image/jpeg', LOAD_FILE('/path/mem13.jpg')),
+('mem14.jpg', 'image/jpeg', LOAD_FILE('/path/mem14.jpg')),
+('mem15.jpg', 'image/jpeg', LOAD_FILE('/path/mem15.jpg')),
+('mem16.jpg', 'image/jpeg', LOAD_FILE('/path/mem16.jpg')),
+('mem17.jpeg', 'image/jpeg', LOAD_FILE('/path/mem17.jpeg')),
+('mem18.jpeg', 'image/jpeg', LOAD_FILE('/path/mem18.jpeg')),
+('mem19.jpeg', 'image/jpeg', LOAD_FILE('/path/mem19.jpeg'));
+
+
+CREATE TABLE IF NOT EXISTS Tags (
+  tag_id INT PRIMARY KEY AUTO_INCREMENT,
+  tag_name VARCHAR(50) UNIQUE,
+  emoji VARCHAR(10),
+  tag_type VARCHAR(50)
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+-- (используем IGNORE, чтобы не было ошибок при повторном запуске)
+INSERT IGNORE INTO Tags (tag_name, emoji, tag_type) VALUES
+('happy', '😊', 'positive'),
+('sad', '😢', 'negative'),
+('angry', '😡', 'negative'),
+('calm', '😌', 'neutral'),
+('anxious', '😰', 'negative');
+
+CREATE TABLE IF NOT EXISTS Log_Tags (
+  log_id INT,
+  tag_id INT,
+  PRIMARY KEY (log_id, tag_id),
+  FOREIGN KEY (log_id) REFERENCES Mood_Logs(log_id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES Tags(tag_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS Teams (
+  team_id INT PRIMARY KEY AUTO_INCREMENT,
+  team_name VARCHAR(50) NOT NULL,
+  team_description VARCHAR(100),
+  created_by INT,
+  FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS Team_Members (
+  team_id INT,
+  user_id INT,
+  role VARCHAR(50) DEFAULT 'member',
+  PRIMARY KEY (team_id, user_id),
+  FOREIGN KEY (team_id) REFERENCES Teams(team_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS Resources (
+  res_id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(100),
+  url VARCHAR(255),
+  res_description VARCHAR(100),
+  category VARCHAR(50)
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+INSERT IGNORE INTO Resources (title, url, res_description, category) VALUES
+('Техники самопомощи', 'https://b17.ru', 'Методы самопомощи при стрессе', 'Самопомощь'),
+('Консультация онлайн', 'https://alter.ru', 'Онлайн консультации', 'психолог');
+
+CREATE TABLE IF NOT EXISTS User_Goals (
+  goal_id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT,
+  goal_text VARCHAR(500),
+  current_value INT DEFAULT 0,
+  is_completed BOOLEAN DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS Reminders (
+  rem_id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT,
+  reminder_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  days_of_week VARCHAR(50),
+  is_active BOOLEAN DEFAULT 1,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8mb4;
+
+CREATE TABLE IF NOT EXISTS Audit_Logs (
+  aud_id INT PRIMARY KEY AUTO_INCREMENT,
+  action_type VARCHAR(50),
+  actor_id INT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (actor_id) REFERENCES Users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
